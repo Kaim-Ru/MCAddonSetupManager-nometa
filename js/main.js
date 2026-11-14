@@ -1485,7 +1485,7 @@ async function setJSONData(json_text = "") {
 
   if (json_data?.["metadata"]) {
     const metadata = json_data["metadata"];
-    generated_with = metadata?.["generated_with"];
+    generated_with = metadata?.["generated_with"] ?? {};
     let is_metadata_enable = false;
     if (metadata?.["authors"]) {
       for (const author of metadata["authors"]) {
@@ -1661,13 +1661,15 @@ function getJSONData() {
     if ($("#metadata_license").val() != "")
       json_raw["metadata"]["license"] = DataReplacer.register($("#metadata_license").val());
   }
-  // generated_with
-  json_raw["metadata"]["generated_with"] = new Object();
-  generated_with["TokaTools-Manifest-Generator"] = Array.from(
-    new Set([...(generated_with["TokaTools-Manifest-Generator"] ?? new Array())]).add(VERSION)
-  );
-  for (const key in generated_with) {
-    json_raw["metadata"]["generated_with"][key] = DataReplacer.register(generated_with[key]);
+  // generated_with (this build does not add its own entry; only keeps what was imported)
+  if (generated_with && Object.keys(generated_with).length > 0) {
+    json_raw["metadata"]["generated_with"] = new Object();
+    for (const key in generated_with) {
+      json_raw["metadata"]["generated_with"][key] = DataReplacer.register(generated_with[key]);
+    }
+  }
+  if (Object.keys(json_raw["metadata"]).length == 0) {
+    delete json_raw["metadata"];
   }
   if (is_subpacks_enable) {
     json_raw["subpacks"] = new Array();
